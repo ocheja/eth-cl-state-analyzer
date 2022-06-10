@@ -3,8 +3,11 @@ package analyzer
 import (
 	"fmt"
 	"math"
+	"sort"
+	"strconv"
 
 	"github.com/pkg/errors"
+	"github.com/prysmaticlabs/go-bitfield"
 
 	api "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
@@ -44,7 +47,7 @@ func GetValidatorBalance(bstate *spec.VersionedBeaconState, valIdx uint64) (uint
 	return balance, err
 }
 
-func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer) (uint64, error) {
+func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer, m map[string]bitfield.Bitlist) (uint64, error) {
 
 	// participationRate := 0.85
 
@@ -58,20 +61,95 @@ func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer) (
 
 		previousAttestatons := bstate.Phase0.PreviousEpochAttestations
 		currentAttestations := bstate.Phase0.CurrentEpochAttestations
+		doubleVotes := 0
 		vals := bstate.Phase0.Validators
 
+		// TODO: check validator active, slashed or exiting
 		for _, item := range vals {
 			if item.ActivationEligibilityEpoch < phase0.Epoch(currentEpoch) {
 				totalAttestingVals += 1
 			}
 		}
-
+		keys := make([]string, 0)
 		for _, item := range previousAttestatons {
-			totalAttPreviousEpoch += int(item.AggregationBits.Count())
+			slot := item.Data.Slot
+			committeeIndex := item.Data.Index
+			fmt.Printf("(%[1]b)\n", item.AggregationBits.Bytes())
+			mapKey := strconv.Itoa(int(slot)) + "_" + strconv.Itoa(int(committeeIndex))
+
+			resultBits := bitfield.NewBitlist(0)
+
+			if val, ok := m[mapKey]; ok {
+				// TODO: check error
+				allZero, err := val.And(item.AggregationBits)
+				if err != nil {
+					fmt.Println(err)
+				}
+				resultBitstmp, err := val.Or(item.AggregationBits)
+
+				if allZero.Count() > 0 {
+					doubleVotes += int(allZero.Count())
+					a := item.AggregationBits.Len()
+					b := val.Len()
+					fmt.Printf("Len1 %d, Len2 %d, And: %08b\n", a, b, allZero)
+				}
+				if err == nil {
+					resultBits = resultBitstmp
+				} else {
+					fmt.Println(err)
+				}
+
+			} else {
+				resultBits = item.AggregationBits
+				keys = append(keys, mapKey)
+			}
+			m[mapKey] = resultBits
+			attPreviousEpoch := int(item.AggregationBits.Count())
+			totalAttPreviousEpoch += attPreviousEpoch // we are counting bits set to 1 aggregation by aggregation
+			// if we do the Or at the same committee we can cathc the double votes
+			// doing that the number of votes is less than the number of validators
+
 		}
 
 		for _, item := range currentAttestations {
+			// slot := item.Data.Slot
+			// committeeIndex := item.Data.Index
+			// if slot < 32 {
+			// 	fmt.Println("first epoch attestation")
+			// }
+
+			// mapKey := strconv.Itoa(int(slot)) + "_" + strconv.Itoa(int(committeeIndex))
+
+			// resultBits := bitfield.NewBitlist(0)
+			// if val, ok := m[mapKey]; ok {
+
+			// 	resultBitstmp, err := val.Or(item.AggregationBits)
+			// 	if err == nil {
+			// 		resultBits = resultBitstmp
+			// 	} else {
+			// 		fmt.Println(err)
+			// 	}
+
+			// } else {
+			// 	resultBits = item.AggregationBits
+			// 	keys = append(keys, mapKey)
+			// }
+			// m[mapKey] = resultBits
 			totalAttCurrentEpoch += int(item.AggregationBits.Count())
+		}
+
+		sort.Strings(keys)
+		numOfCommittees := 0
+		numOfBits := uint64(0)
+		numOf1Bits := 0
+
+		for _, key := range keys {
+
+			fmt.Printf("%s: %d\n", key, m[key].Len())
+			numOfBits += m[key].Len()
+			tmpBits := int(m[key].Count())
+			numOf1Bits += tmpBits
+			numOfCommittees += 1
 		}
 
 		fmt.Println("Current Epoch: ", currentEpoch)
