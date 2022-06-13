@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/prysmaticlabs/go-bitfield"
 	"github.com/sirupsen/logrus"
 
 	api "github.com/attestantio/go-eth2-client/api/v1"
@@ -64,7 +65,7 @@ func NewStateAnalyzer(ctx context.Context, httpCli *clientapi.APIClient, initSlo
 		epochRange++
 	}
 
-	// for i := (initSlot - (initSlot % 32)); i < (finalSlot + (32 - (finalSlot % 32))); i += utils.SlotBase {
+	// for i := initSlot; i < finalSlot; i += 1 {
 	// 	slotRanges = append(slotRanges, i)
 	// 	epochRange++
 	// }
@@ -92,16 +93,24 @@ func NewStateAnalyzer(ctx context.Context, httpCli *clientapi.APIClient, initSlo
 	}, nil
 }
 
+type Committee struct {
+	CommitteeIndex  uint64
+	Slot            uint64
+	AggregationBits bitfield.Bitlist
+}
+
 func (s *StateAnalyzer) Run() {
 	// State requester
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 	// State requester + Task generator
+	m := make(map[string]bitfield.Bitlist)
 	go func() {
 		defer wg.Done()
 		log.Info("Launching Beacon State Requester")
 		// loop over the list of slots that we need to analyze
+
 		for _, slot := range s.SlotRanges {
 			ticker := time.NewTicker(minReqTime)
 			select {
@@ -120,7 +129,7 @@ func (s *StateAnalyzer) Run() {
 					close(s.ValidatorTaskChan)
 					return
 				}
-				_, _ = GetParticipationRate(bstate, s)
+				_, _ = GetParticipationRate(bstate, s, m)
 
 				log.Debug("requesting Validator list from endpoint")
 				validatorFilter := make([]phase0.ValidatorIndex, 0)

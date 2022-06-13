@@ -60,7 +60,7 @@ func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer, m
 		totalAttestingVals := 0
 
 		previousAttestatons := bstate.Phase0.PreviousEpochAttestations
-		currentAttestations := bstate.Phase0.CurrentEpochAttestations
+		// currentAttestations := bstate.Phase0.CurrentEpochAttestations
 		doubleVotes := 0
 		vals := bstate.Phase0.Validators
 
@@ -74,24 +74,22 @@ func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer, m
 		for _, item := range previousAttestatons {
 			slot := item.Data.Slot
 			committeeIndex := item.Data.Index
-			fmt.Printf("(%[1]b)\n", item.AggregationBits.Bytes())
 			mapKey := strconv.Itoa(int(slot)) + "_" + strconv.Itoa(int(committeeIndex))
 
 			resultBits := bitfield.NewBitlist(0)
 
 			if val, ok := m[mapKey]; ok {
+				// the committeeIndex for the given slot already had an aggregation
 				// TODO: check error
-				allZero, err := val.And(item.AggregationBits)
+				allZero, err := val.And(item.AggregationBits) // if the same position of the aggregations has a 1 in the same position, there was a double vote
 				if err != nil {
 					fmt.Println(err)
 				}
-				resultBitstmp, err := val.Or(item.AggregationBits)
+				resultBitstmp, err := val.Or(item.AggregationBits) // to join all aggregation we do Or operation
 
 				if allZero.Count() > 0 {
+					// there was a double vote
 					doubleVotes += int(allZero.Count())
-					a := item.AggregationBits.Len()
-					b := val.Len()
-					fmt.Printf("Len1 %d, Len2 %d, And: %08b\n", a, b, allZero)
 				}
 				if err == nil {
 					resultBits = resultBitstmp
@@ -100,42 +98,16 @@ func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer, m
 				}
 
 			} else {
+				// we had not received any aggregation for this committeeIndex at the given slot
 				resultBits = item.AggregationBits
 				keys = append(keys, mapKey)
 			}
 			m[mapKey] = resultBits
 			attPreviousEpoch := int(item.AggregationBits.Count())
 			totalAttPreviousEpoch += attPreviousEpoch // we are counting bits set to 1 aggregation by aggregation
-			// if we do the Or at the same committee we can cathc the double votes
+			// if we do the And at the same committee we can catch the double votes
 			// doing that the number of votes is less than the number of validators
 
-		}
-
-		for _, item := range currentAttestations {
-			// slot := item.Data.Slot
-			// committeeIndex := item.Data.Index
-			// if slot < 32 {
-			// 	fmt.Println("first epoch attestation")
-			// }
-
-			// mapKey := strconv.Itoa(int(slot)) + "_" + strconv.Itoa(int(committeeIndex))
-
-			// resultBits := bitfield.NewBitlist(0)
-			// if val, ok := m[mapKey]; ok {
-
-			// 	resultBitstmp, err := val.Or(item.AggregationBits)
-			// 	if err == nil {
-			// 		resultBits = resultBitstmp
-			// 	} else {
-			// 		fmt.Println(err)
-			// 	}
-
-			// } else {
-			// 	resultBits = item.AggregationBits
-			// 	keys = append(keys, mapKey)
-			// }
-			// m[mapKey] = resultBits
-			totalAttCurrentEpoch += int(item.AggregationBits.Count())
 		}
 
 		sort.Strings(keys)
@@ -145,10 +117,8 @@ func GetParticipationRate(bstate *spec.VersionedBeaconState, s *StateAnalyzer, m
 
 		for _, key := range keys {
 
-			fmt.Printf("%s: %d\n", key, m[key].Len())
 			numOfBits += m[key].Len()
-			tmpBits := int(m[key].Count())
-			numOf1Bits += tmpBits
+			numOf1Bits += int(m[key].Count())
 			numOfCommittees += 1
 		}
 
