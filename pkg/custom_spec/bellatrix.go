@@ -45,6 +45,7 @@ func NewBellatrixSpec(bstate *spec.VersionedBeaconState, prevBstate spec.Version
 
 	// initialize missing flags arrays
 	BellatrixObj.WrappedState.InitializeArrays(uint64(len(bstate.Bellatrix.Validators)))
+	BellatrixObj.CountPrevActiveVals()
 
 	// calculate attesting vals only once
 	BellatrixObj.CalculatePreviousAttestingVals()
@@ -56,6 +57,17 @@ func NewBellatrixSpec(bstate *spec.VersionedBeaconState, prevBstate spec.Version
 	BellatrixObj.TrackMissingBlocks()
 
 	return BellatrixObj
+}
+
+// this method counts active validators in the previous epoch
+func (p *BellatrixSpec) CountPrevActiveVals() {
+
+	for idx := range p.WrappedState.PrevBState.Altair.Validators {
+		if IsActive(*p.WrappedState.PrevBState.Altair.Validators[idx], phase0.Epoch(p.CurrentEpoch())) {
+			p.WrappedState.PrevTotalActiveVals += 1
+		}
+
+	}
 }
 
 // This method will calculate attesting vals to the previous epoch per flag

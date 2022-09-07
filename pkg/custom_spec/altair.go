@@ -56,6 +56,7 @@ func NewAltairSpec(bstate *spec.VersionedBeaconState, prevBstate spec.VersionedB
 
 	// initialize missing flags arrays
 	altairObj.WrappedState.InitializeArrays(uint64(len(bstate.Altair.Validators)))
+	altairObj.CountPrevActiveVals()
 
 	// calculate attesting vals only once
 	altairObj.CalculatePreviousAttestingVals()
@@ -67,6 +68,16 @@ func NewAltairSpec(bstate *spec.VersionedBeaconState, prevBstate spec.VersionedB
 	altairObj.TrackMissingBlocks()
 
 	return altairObj
+}
+
+func (p *AltairSpec) CountPrevActiveVals() {
+
+	for idx := range p.WrappedState.PrevBState.Altair.Validators {
+		if IsActive(*p.WrappedState.PrevBState.Altair.Validators[idx], phase0.Epoch(p.CurrentEpoch())) {
+			p.WrappedState.PrevTotalActiveVals += 1
+		}
+
+	}
 }
 
 // This method will calculate attesting vals to the previous epoch per flag
@@ -133,11 +144,9 @@ func (p AltairSpec) GetTotalActiveEffBalance() uint64 {
 
 	all_vals := p.WrappedState.BState.Altair.Validators
 	val_array := make([]uint64, len(all_vals))
-	p.WrappedState.PrevTotalActiveVals = 0
 	for idx := range val_array {
 		if IsActive(*all_vals[idx], phase0.Epoch(p.CurrentEpoch())) {
 			val_array[idx] += 1
-			p.WrappedState.PrevTotalActiveVals += 1
 		}
 
 	}
