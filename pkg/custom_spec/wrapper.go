@@ -7,15 +7,16 @@ import (
 
 // This Wrapper is meant to include all common objects across Ethereum Hard Fork Specs
 type ForkStateContent struct {
-	BState             spec.VersionedBeaconState
-	PrevBState         spec.VersionedBeaconState
-	PrevEpochStructs   EpochData
-	EpochStructs       EpochData
-	Api                *http.Service
-	TotalActiveBalance uint64   // effective balance
-	AttestingBalance   []uint64 // one attesting balance per flag
-	CorrectFlags       [][]bool
-	MissedBlocks       []uint64 // array that stores the slot number where there was a missing block
+	BState              spec.VersionedBeaconState
+	PrevBState          spec.VersionedBeaconState
+	PrevEpochStructs    EpochData
+	EpochStructs        EpochData
+	Api                 *http.Service
+	TotalActiveBalance  uint64 // effective balance
+	PrevTotalActiveVals uint64
+	AttestingBalance    []uint64 // one attesting balance per flag
+	CorrectFlags        [][]bool
+	MissedBlocks        []uint64 // array that stores the slot number where there was a missing block
 }
 
 func (p *ForkStateContent) InitializeArrays(arrayLen uint64) {

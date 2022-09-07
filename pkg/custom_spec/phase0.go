@@ -254,8 +254,8 @@ func (p Phase0Spec) GetMaxReward(valIdx uint64) (ValidatorSepRewards, error) {
 		inclusionDelayReward = baseReward * 7.0 / 8.0
 	}
 
-	// proposerReward := p.GetMaxProposerReward(valIdx, uint64(valEffectiveBalance), activeBalance)
-	proposerReward := float64(0)
+	proposerReward := p.GetMaxProposerReward(valIdx, uint64(valEffectiveBalance), activeBalance)
+	// proposerReward := float64(0)
 	maxReward := voteReward + inclusionDelayReward + proposerReward
 
 	result := ValidatorSepRewards{

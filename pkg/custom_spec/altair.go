@@ -133,10 +133,11 @@ func (p AltairSpec) GetTotalActiveEffBalance() uint64 {
 
 	all_vals := p.WrappedState.BState.Altair.Validators
 	val_array := make([]uint64, len(all_vals))
-
+	p.WrappedState.PrevTotalActiveVals = 0
 	for idx := range val_array {
 		if IsActive(*all_vals[idx], phase0.Epoch(p.CurrentEpoch())) {
 			val_array[idx] += 1
+			p.WrappedState.PrevTotalActiveVals += 1
 		}
 
 	}
@@ -144,15 +145,45 @@ func (p AltairSpec) GetTotalActiveEffBalance() uint64 {
 	return p.ValsEffectiveBalance(val_array)
 }
 
-func (p AltairSpec) GetMaxProposerAttReward(valIdx uint64, valPubKey phase0.BLSPubKey, valEffectiveBalance uint64, totalEffectiveBalance uint64) float64 {
+func (p AltairSpec) GetMaxProposerAttReward(
+	valIdx uint64, valPubKey phase0.BLSPubKey,
+	valEffectiveBalance uint64,
+	totalEffectiveBalance uint64) (float64, int) {
 
-	return 0
+	isProposer := false
+	proposerSlot := 0
+	duties := p.WrappedState.PrevEpochStructs.ProposerDuties
+	for _, duty := range duties {
+		if duty.ValidatorIndex == phase0.ValidatorIndex(valIdx) {
+			isProposer = true
+			proposerSlot = int(duty.Slot)
+			break
+		}
+	}
+
+	if isProposer {
+		// we assume validator attestations are included evenly in all blocks
+		avgValsPerSlot := p.WrappedState.PrevTotalActiveVals / SLOTS_PER_EPOCH
+
+		// we assume the best case that all validators have 32ETH effective balance
+		baseReward := GetBaseReward(MAX_EFFECTIVE_INCREMENTS*EFFECTIVE_BALANCE_INCREMENT, totalEffectiveBalance)
+
+		proposerReward := baseReward * (float64(TIMELY_SOURCE_WEIGHT) + float64(TIMELY_TARGET_WEIGHT) + float64(TIMELY_HEAD_WEIGHT))
+		denominator := (WEIGHT_DENOMINATOR - PROPOSER_WEIGHT) * WEIGHT_DENOMINATOR / PROPOSER_WEIGHT
+		return float64(avgValsPerSlot) * proposerReward / float64(denominator), proposerSlot
+	}
+
+	return 0, 0
 
 }
 
 func (p AltairSpec) GetMaxProposerSyncReward(valIdx uint64, valPubKey phase0.BLSPubKey, valEffectiveBalance uint64, totalEffectiveBalance uint64) float64 {
-
-	return 0
+	totalActiveInc := totalEffectiveBalance / EFFECTIVE_BALANCE_INCREMENT
+	totalBaseRewards := GetBaseRewardPerInc(totalEffectiveBalance) * float64(totalActiveInc)
+	maxParticipantreward := totalBaseRewards * float64(SYNC_REWARD_WEIGHT) / float64(WEIGHT_DENOMINATOR) / SLOTS_PER_EPOCH
+	participantReward := maxParticipantreward / float64(SYNC_COMMITTEE_SIZE)
+	proposerReward := participantReward * float64(PROPOSER_WEIGHT) / (float64(WEIGHT_DENOMINATOR) - float64(PROPOSER_WEIGHT))
+	return proposerReward * float64(SYNC_COMMITTEE_SIZE)
 
 }
 
