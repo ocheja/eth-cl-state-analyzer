@@ -145,7 +145,7 @@ func (p AltairSpec) GetTotalActiveEffBalance() uint64 {
 	return p.ValsEffectiveBalance(val_array)
 }
 
-func (p AltairSpec) GetMaxProposerAttReward(
+func (p AltairSpec) GetMaxProposerReward(
 	valIdx uint64, valPubKey phase0.BLSPubKey,
 	valEffectiveBalance uint64,
 	totalEffectiveBalance uint64) (float64, int) {
@@ -249,7 +249,9 @@ func (p AltairSpec) GetMaxReward(valIdx uint64) (ValidatorSepRewards, error) {
 
 	syncComMaxReward := p.GetMaxSyncComReward(valIdx, uint64(valEffectiveBalance), totalEffectiveBalance)
 
-	maxReward := flagIndexMaxReward + syncComMaxReward
+	proposerReward, _ := p.GetMaxProposerReward(valIdx, p.WrappedState.PrevBState.Altair.Validators[valIdx].PublicKey, uint64(valEffectiveBalance), totalEffectiveBalance)
+
+	maxReward := flagIndexMaxReward + syncComMaxReward + proposerReward
 
 	result := ValidatorSepRewards{
 		Attestation:    0,
