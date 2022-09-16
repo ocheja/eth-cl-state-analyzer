@@ -1,6 +1,7 @@
 package fork_metrics
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/attestantio/go-eth2-client/spec/phase0"
@@ -111,6 +112,7 @@ func (p AltairMetrics) GetMaxAttestationReward(valIdx uint64, baseReward float64
 			flagReward := float64(PARTICIPATING_FLAGS_WEIGHT[i]) * baseReward * float64(attestingBalanceInc)
 			flagReward = flagReward / ((float64(p.CurrentState.TotalActiveBalance / fork_state.EFFECTIVE_BALANCE_INCREMENT)) * float64(WEIGHT_DENOMINATOR))
 			maxFlagsReward += flagReward
+			fmt.Printf("Flag: %d, Reward: %f", i, flagReward)
 		}
 	}
 
@@ -128,6 +130,7 @@ func (p AltairMetrics) GetMaxAttestationReward(valIdx uint64, baseReward float64
 func (p AltairMetrics) GetMaxReward(valIdx uint64) (ValidatorSepRewards, error) {
 
 	baseReward := p.GetBaseReward(valIdx)
+	fmt.Println(baseReward)
 
 	flagIndexMaxReward := p.GetMaxAttestationReward(valIdx, baseReward)
 
@@ -147,7 +150,7 @@ func (p AltairMetrics) GetMaxReward(valIdx uint64) (ValidatorSepRewards, error) 
 		Attestation:     0,
 		InclusionDelay:  0,
 		FlagIndex:       flagIndexMaxReward,
-		SyncCommittee:   0,
+		SyncCommittee:   syncComMaxReward,
 		MaxReward:       maxReward,
 		BaseReward:      baseReward,
 		ProposerSlot:    proposerSlot,
