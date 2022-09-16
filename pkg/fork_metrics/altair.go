@@ -1,7 +1,6 @@
 package fork_metrics
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/attestantio/go-eth2-client/spec/phase0"
@@ -83,7 +82,7 @@ func (p AltairMetrics) GetMaxSyncComReward(valIdx uint64) float64 {
 	if !inCommittee {
 		return 0
 	}
-	fmt.Println("In Sync Committee")
+
 	// at this point we know the validator was inside the sync committee and, therefore, active at that point
 
 	totalActiveInc := p.NextState.TotalActiveBalance / fork_state.EFFECTIVE_BALANCE_INCREMENT

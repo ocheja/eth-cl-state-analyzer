@@ -1,6 +1,7 @@
 package fork_state
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/attestantio/go-eth2-client/http"
@@ -37,6 +38,7 @@ func NewAltairState(bstate spec.VersionedBeaconState, iApi *http.Service) ForkSt
 	altairObj.Setup()
 
 	ProcessAttestations(&altairObj, bstate.Altair.PreviousEpochParticipation)
+	fmt.Println(altairObj.NumAttestingVals)
 
 	return altairObj
 }
