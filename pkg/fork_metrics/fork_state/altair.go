@@ -6,6 +6,7 @@ import (
 	"github.com/attestantio/go-eth2-client/http"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/cortze/eth2-state-analyzer/pkg/utils"
 )
 
@@ -57,7 +58,7 @@ func ProcessAttestations(customState *ForkStateContentBase, participation []alta
 			// Item is a 3-bit string
 			// each bit represents a flag
 
-			if (item & flag) == flag {
+			if (item&flag) == flag && IsActive(*customState.Validators[valIndex], phase0.Epoch(customState.Epoch)) {
 				// The attestation has a timely flag, therefore we consider it correct flag
 				customState.CorrectFlags[participatingFlag][valIndex] += uint64(1)
 
