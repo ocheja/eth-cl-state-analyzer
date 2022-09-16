@@ -24,9 +24,11 @@ func NewBellatrixState(bstate spec.VersionedBeaconState, iApi *http.Service) For
 
 	bellatrixObj.Setup()
 
+	fmt.Printf("AttVals1: %d", bellatrixObj.NumAttestingVals)
+	fmt.Printf("ActiveVals1: %d", bellatrixObj.NumActiveVals)
 	ProcessAttestations(&bellatrixObj, bstate.Bellatrix.PreviousEpochParticipation)
-	fmt.Println(bellatrixObj.NumAttestingVals)
-	fmt.Println(bellatrixObj.NumActiveVals)
+	fmt.Printf("AttVals2: %d", bellatrixObj.NumAttestingVals)
+	fmt.Printf("ActiveVals2: %d", bellatrixObj.NumActiveVals)
 
 	return bellatrixObj
 }
