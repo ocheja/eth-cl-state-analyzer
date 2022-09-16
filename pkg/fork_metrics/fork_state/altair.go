@@ -38,7 +38,6 @@ func NewAltairState(bstate spec.VersionedBeaconState, iApi *http.Service) ForkSt
 	altairObj.Setup()
 
 	ProcessAttestations(&altairObj, bstate.Altair.PreviousEpochParticipation)
-	fmt.Println(altairObj.NumAttestingVals)
 
 	return altairObj
 }
@@ -75,4 +74,6 @@ func ProcessAttestations(customState *ForkStateContentBase, participation []alta
 			}
 		}
 	}
+
+	fmt.Println(customState.NumAttestingVals)
 }
