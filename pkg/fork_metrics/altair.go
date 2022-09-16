@@ -97,7 +97,7 @@ func (p AltairMetrics) GetMaxSyncComReward(valIdx uint64) float64 {
 // https://github.com/ethereum/consensus-specs/blob/dev/specs/altair/beacon-chain.md#get_flag_index_deltas
 func (p AltairMetrics) GetMaxAttestationReward(valIdx uint64, baseReward float64) float64 {
 
-	maxFlagsReward := float64(0)
+	maxFlagsReward := int64(0)
 	// the maxReward would be each flag_index_weight * base_reward * (attesting_balance_inc / total_active_balance_inc) / WEIGHT_DENOMINATOR
 
 	if fork_state.IsActive(*p.NextState.Validators[valIdx], phase0.Epoch(p.PrevState.Epoch)) {
@@ -108,13 +108,13 @@ func (p AltairMetrics) GetMaxAttestationReward(valIdx uint64, baseReward float64
 			// apply formula
 			attestingBalanceInc := p.CurrentState.AttestingBalance[i] / fork_state.EFFECTIVE_BALANCE_INCREMENT
 
-			flagReward := float64(PARTICIPATING_FLAGS_WEIGHT[i]) * baseReward * float64(attestingBalanceInc)
-			flagReward = flagReward / ((float64(p.CurrentState.TotalActiveBalance / fork_state.EFFECTIVE_BALANCE_INCREMENT)) * float64(WEIGHT_DENOMINATOR))
+			flagReward := int64(PARTICIPATING_FLAGS_WEIGHT[i]) * int64(baseReward) * int64(attestingBalanceInc)
+			flagReward = flagReward / ((int64(p.CurrentState.TotalActiveBalance / fork_state.EFFECTIVE_BALANCE_INCREMENT)) * int64(WEIGHT_DENOMINATOR))
 			maxFlagsReward += flagReward
 		}
 	}
 
-	return maxFlagsReward
+	return float64(maxFlagsReward)
 }
 
 // This method returns the Max Reward the validator could gain

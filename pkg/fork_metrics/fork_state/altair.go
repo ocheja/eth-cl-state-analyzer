@@ -58,6 +58,7 @@ func ProcessAttestations(customState *ForkStateContentBase, participation []alta
 			// Item is a 3-bit string
 			// each bit represents a flag
 
+			// check attested and not slashed
 			if (item&flag) == flag && IsActive(*customState.Validators[valIndex], phase0.Epoch(customState.Epoch)) {
 				// The attestation has a timely flag, therefore we consider it correct flag
 				customState.CorrectFlags[participatingFlag][valIndex] += uint64(1)
