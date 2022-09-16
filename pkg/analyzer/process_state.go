@@ -82,9 +82,9 @@ func (s *StateAnalyzer) runProcessState(wgProcess *sync.WaitGroup, downloadFinis
 
 			log.Debugf("Writing epoch metrics to DB for slot %d...", task.State.Slot)
 			// create a model to be inserted into the db, we only insert previous epoch metrics
-			fmt.Printf("Source Att Balance: %d", stateMetrics.GetMetricsBase().CurrentState.AttestingBalance[0])
-			fmt.Printf("Target Att Balance: %d", stateMetrics.GetMetricsBase().CurrentState.AttestingBalance[1])
-			fmt.Printf("Head Att Balance: %d", stateMetrics.GetMetricsBase().CurrentState.AttestingBalance[2])
+			fmt.Printf("Source Att Balance: %d\n", stateMetrics.GetMetricsBase().CurrentState.AttestingBalance[0])
+			fmt.Printf("Target Att Balance: %d\n", stateMetrics.GetMetricsBase().CurrentState.AttestingBalance[1])
+			fmt.Printf("Head Att Balance: %d\n", stateMetrics.GetMetricsBase().CurrentState.AttestingBalance[2])
 			epochDBRow := model.NewEpochMetrics(
 				stateMetrics.GetMetricsBase().PrevState.Epoch,
 				stateMetrics.GetMetricsBase().PrevState.Slot,
