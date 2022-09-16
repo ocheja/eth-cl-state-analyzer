@@ -66,11 +66,7 @@ func ProcessAttestations(customState *ForkStateContentBase, participation []alta
 
 				// if this validator was not counted as attesting before, count it now
 				if !customState.AttestingVals[valIndex] {
-					customState.NumAttestingVals++
-				}
-
-				// if no attestation was registered for the val, add the balance, any flag counts
-				if !customState.AttestingVals[valIndex] {
+					customState.NumAttestingVals += 1
 					customState.MaxAttestingBalance += uint64(customState.Validators[valIndex].EffectiveBalance)
 				}
 				customState.AttestingVals[valIndex] = true

@@ -115,7 +115,7 @@ func (p ForkStateContentBase) GetTotalActiveEffBalance() uint64 {
 	for idx := range val_array {
 		if IsActive(*p.Validators[idx], phase0.Epoch(p.Epoch)) {
 			val_array[idx] += 1
-			p.NumActiveVals++
+			p.NumActiveVals += 1
 		}
 
 	}
