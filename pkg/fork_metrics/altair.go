@@ -1,6 +1,7 @@
 package fork_metrics
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/attestantio/go-eth2-client/spec/phase0"
@@ -82,7 +83,7 @@ func (p AltairMetrics) GetMaxSyncComReward(valIdx uint64) float64 {
 	if !inCommittee {
 		return 0
 	}
-
+	fmt.Println("In Sync Committee")
 	// at this point we know the validator was inside the sync committee and, therefore, active at that point
 
 	totalActiveInc := p.NextState.TotalActiveBalance / fork_state.EFFECTIVE_BALANCE_INCREMENT
@@ -111,7 +112,6 @@ func (p AltairMetrics) GetMaxAttestationReward(valIdx uint64, baseReward float64
 			flagReward := float64(PARTICIPATING_FLAGS_WEIGHT[i]) * baseReward * float64(attestingBalanceInc)
 			flagReward = flagReward / ((float64(p.CurrentState.TotalActiveBalance / fork_state.EFFECTIVE_BALANCE_INCREMENT)) * float64(WEIGHT_DENOMINATOR))
 			maxFlagsReward += flagReward
-			log.Infof("Flag: %d, Reward: %f", i, flagReward)
 		}
 	}
 
@@ -129,7 +129,6 @@ func (p AltairMetrics) GetMaxAttestationReward(valIdx uint64, baseReward float64
 func (p AltairMetrics) GetMaxReward(valIdx uint64) (ValidatorSepRewards, error) {
 
 	baseReward := p.GetBaseReward(valIdx)
-	log.Infof("%f", baseReward)
 
 	flagIndexMaxReward := p.GetMaxAttestationReward(valIdx, baseReward)
 
