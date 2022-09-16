@@ -7,13 +7,14 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/cortze/eth2-state-analyzer/pkg/fork_metrics/fork_state"
+	"github.com/sirupsen/logrus"
 )
 
-// var (
-// 	log = logrus.WithField(
-// 		"module", "custom_spec",
-// 	)
-// )
+var (
+	log = logrus.WithField(
+		"module", "custom_spec",
+	)
+)
 
 type Phase0Metrics struct {
 	StateMetricsBase
