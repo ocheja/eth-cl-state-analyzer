@@ -1,7 +1,6 @@
 package fork_state
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/attestantio/go-eth2-client/http"
@@ -75,5 +74,4 @@ func ProcessAttestations(customState *ForkStateContentBase, participation []alta
 		}
 	}
 
-	fmt.Println(customState.NumAttestingVals)
 }

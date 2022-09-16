@@ -1,6 +1,8 @@
 package fork_state
 
 import (
+	"fmt"
+
 	"github.com/attestantio/go-eth2-client/http"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/cortze/eth2-state-analyzer/pkg/utils"
@@ -23,6 +25,8 @@ func NewBellatrixState(bstate spec.VersionedBeaconState, iApi *http.Service) For
 	bellatrixObj.Setup()
 
 	ProcessAttestations(&bellatrixObj, bstate.Bellatrix.PreviousEpochParticipation)
+	fmt.Println(bellatrixObj.NumAttestingVals)
+	fmt.Println(bellatrixObj.NumActiveVals)
 
 	return bellatrixObj
 }
