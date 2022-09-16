@@ -10,6 +10,7 @@ import (
 func NewBellatrixState(bstate spec.VersionedBeaconState, iApi *http.Service) ForkStateContentBase {
 
 	bellatrixObj := ForkStateContentBase{
+		Version:      bstate.Version,
 		Balances:     bstate.Bellatrix.Balances,
 		Validators:   bstate.Bellatrix.Validators,
 		EpochStructs: NewEpochData(iApi, bstate.Bellatrix.Slot),
