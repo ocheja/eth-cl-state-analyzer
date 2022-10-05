@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/attestantio/go-eth2-client/spec/altair"
-	"github.com/cortze/eth2-state-analyzer/pkg/db/postgresql"
 	"github.com/cortze/eth2-state-analyzer/pkg/db/postgresql/model"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
@@ -60,7 +59,7 @@ func (s *StateAnalyzer) runWorker(wlog *logrus.Entry, wgWorkers *sync.WaitGroup,
 					stateMetrics.GetMetricsBase().NextState.Slot,
 					stateMetrics.GetMetricsBase().NextState.Epoch,
 					balance,
-					0, // reward is written after state transition
+					stateMetrics.GetMetricsBase().EpochReward(valIdx),
 					maxRewards.MaxReward,
 					maxRewards.Attestation,
 					maxRewards.InclusionDelay,
@@ -93,27 +92,27 @@ func (s *StateAnalyzer) runWorker(wlog *logrus.Entry, wgWorkers *sync.WaitGroup,
 					validatorDBRow.MissingTarget,
 					validatorDBRow.MissingHead)
 
-				if stateMetrics.GetMetricsBase().CurrentState.Slot >= 63 {
-					reward := stateMetrics.GetMetricsBase().PrevEpochReward(valIdx)
+				// if stateMetrics.GetMetricsBase().CurrentState.Slot >= 63 {
+				// 	reward := stateMetrics.GetMetricsBase().PrevEpochReward(valIdx)
 
-					// keep in mind that att rewards for epoch 10 can be seen at beginning of epoch 12,
-					// after state_transition
-					// https://notes.ethereum.org/@vbuterin/Sys3GLJbD#Epoch-processing
+				// 	// keep in mind that att rewards for epoch 10 can be seen at beginning of epoch 12,
+				// 	// after state_transition
+				// 	// https://notes.ethereum.org/@vbuterin/Sys3GLJbD#Epoch-processing
 
-					validatorDBRow.Reward = reward
-					validatorDBRow.Slot = int(stateMetrics.GetMetricsBase().CurrentState.Slot)
+				// 	validatorDBRow.Reward = reward
+				// 	validatorDBRow.Slot = int(stateMetrics.GetMetricsBase().CurrentState.Slot)
 
-					batch.Queue(model.UpdateValidatorLineTable,
-						validatorDBRow.ValidatorIndex,
-						validatorDBRow.Slot,
-						validatorDBRow.Reward)
+				// 	batch.Queue(model.UpdateValidatorLineTable,
+				// 		validatorDBRow.ValidatorIndex,
+				// 		validatorDBRow.Slot,
+				// 		validatorDBRow.Reward)
 
-					if batch.Len() > postgresql.MAX_BATCH_QUEUE || (*processFinishedFlag && len(s.ValTaskChan) == 0) {
-						wlog.Debugf("Sending batch to be stored...")
-						s.dbClient.WriteChan <- batch
-						batch = pgx.Batch{}
-					}
-				}
+				// 	if batch.Len() > postgresql.MAX_BATCH_QUEUE || (*processFinishedFlag && len(s.ValTaskChan) == 0) {
+				// 		wlog.Debugf("Sending batch to be stored...")
+				// 		s.dbClient.WriteChan <- batch
+				// 		batch = pgx.Batch{}
+				// 	}
+				// }
 
 			}
 
