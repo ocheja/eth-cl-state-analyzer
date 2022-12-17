@@ -120,15 +120,10 @@ func (s *BlockAnalyzer) runDownloadBlocksFinalized(wgDownload *sync.WaitGroup) {
 				continue
 			}
 
-			finalizedSlot = int(header.Header.Message.Slot)
-			log.Infof("New finalized state at slot: %d", finalizedSlot)
-			newBlock, err := s.cli.Api.SignedBeaconBlock(s.ctx, fmt.Sprintf("%d", finalizedSlot))
-			if newBlock == nil {
-				log.Errorf("the Beacon Block is unavailable, nil block")
-				// send task to be processed
+			for i := finalizedSlot; i < int(header.Header.Message.Slot); i++ {
 				blockTask := &BlockTask{
 					Block: fork_block.ForkBlockContentBase{
-						Slot:          uint64(finalizedSlot),
+						Slot:          uint64(i),
 						ProposerIndex: 0,
 						Graffiti:      [32]byte{},
 						Attestations:  nil,
@@ -139,12 +134,19 @@ func (s *BlockAnalyzer) runDownloadBlocksFinalized(wgDownload *sync.WaitGroup) {
 				}
 				log.Debugf("sending a new missed task for slot %d", finalizedSlot)
 				s.BlockTaskChan <- blockTask
+			}
+
+			finalizedSlot = int(header.Header.Message.Slot)
+			log.Infof("New finalized state at slot: %d", finalizedSlot)
+			newBlock, err := s.cli.Api.SignedBeaconBlock(s.ctx, fmt.Sprintf("%d", finalizedSlot))
+			if newBlock == nil {
+				log.Errorf("the Beacon Block is unavailable at slot %d", finalizedSlot)
 				continue
 			}
 			if err != nil {
 				// close the channel (to tell other routines to stop processing and end)
 				log.Errorf("unable to retrieve the beacon block at slot %d. %s", finalizedSlot, err.Error())
-				return
+				continue
 			}
 
 			customBlock, err := fork_block.GetCustomBlock(*newBlock, s.cli.Api)
