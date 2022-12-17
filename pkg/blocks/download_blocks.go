@@ -113,27 +113,29 @@ func (s *BlockAnalyzer) runDownloadBlocksFinalized(wgDownload *sync.WaitGroup) {
 			header, err := s.cli.Api.BeaconBlockHeader(s.ctx, "head")
 			if err != nil {
 				log.Errorf("Unable to retrieve Beacon State from the beacon node, closing finalized requester routine. %s", err.Error())
-				return
+				continue
 			}
 			if int(header.Header.Message.Slot) == finalizedSlot {
 				log.Infof("No new finalized state yet")
 				continue
 			}
+			if finalizedSlot > 0 {
 
-			for i := finalizedSlot; i < int(header.Header.Message.Slot); i++ {
-				blockTask := &BlockTask{
-					Block: fork_block.ForkBlockContentBase{
-						Slot:          uint64(i),
-						ProposerIndex: 0,
-						Graffiti:      [32]byte{},
-						Attestations:  nil,
-						Deposits:      nil,
-					},
-					Slot:     uint64(finalizedSlot),
-					Proposed: false,
+				for i := finalizedSlot; i < int(header.Header.Message.Slot); i++ {
+					blockTask := &BlockTask{
+						Block: fork_block.ForkBlockContentBase{
+							Slot:          uint64(i),
+							ProposerIndex: 0,
+							Graffiti:      [32]byte{},
+							Attestations:  nil,
+							Deposits:      nil,
+						},
+						Slot:     uint64(finalizedSlot),
+						Proposed: false,
+					}
+					log.Debugf("sending a new missed task for slot %d", i)
+					s.BlockTaskChan <- blockTask
 				}
-				log.Debugf("sending a new missed task for slot %d", finalizedSlot)
-				s.BlockTaskChan <- blockTask
 			}
 
 			finalizedSlot = int(header.Header.Message.Slot)
