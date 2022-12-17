@@ -127,18 +127,7 @@ func (s *StateAnalyzer) runDownloadStatesFinalized(wgDownload *sync.WaitGroup) {
 		case <-epochTicker:
 			epochTicker = time.After(384 * time.Second)
 			ticker.Reset(minReqTime)
-			firstIteration := true
-			secondIteration := true
-			// make the state query
-			log.Infof("requesting Beacon State from endpoint: finalized")
-			if bstate.AttestingBalance != nil { // in case we already had a bstate (only false the first time)
-				prevBState = bstate
-				firstIteration = false
-			}
-			if nextBstate.AttestingBalance != nil { // in case we already had a nextBstate (only false the first time)
-				bstate = nextBstate
-				secondIteration = false
-			}
+
 			header, err := s.cli.Api.BeaconBlockHeader(s.ctx, "finalized")
 			if err != nil {
 				log.Errorf("Unable to retrieve Beacon State from the beacon node, closing finalized requester routine. %s", err.Error())
@@ -149,8 +138,22 @@ func (s *StateAnalyzer) runDownloadStatesFinalized(wgDownload *sync.WaitGroup) {
 				continue
 			}
 
+			firstIteration := true
+			secondIteration := true
+
+			if bstate.AttestingBalance != nil { // in case we already had a bstate (only false the first time)
+				prevBState = bstate
+				firstIteration = false
+			}
+			if nextBstate.AttestingBalance != nil { // in case we already had a nextBstate (only false the first time)
+				bstate = nextBstate
+				secondIteration = false
+			}
+
 			finalizedSlot = int(header.Header.Message.Slot) - 1
 			log.Infof("New finalized state at slot: %d", finalizedSlot)
+			// make the state query
+			log.Infof("requesting Beacon State from endpoint: finalized")
 			newState, err := s.cli.Api.BeaconState(s.ctx, fmt.Sprintf("%d", finalizedSlot))
 			if newState == nil {
 				log.Errorf("Unable to retrieve Finalized Beacon State from the beacon node, closing requester routine. Nil State")
