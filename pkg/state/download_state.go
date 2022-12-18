@@ -131,7 +131,7 @@ func (s *StateAnalyzer) runDownloadStatesFinalized(wgDownload *sync.WaitGroup) {
 			header, err := s.cli.Api.BeaconBlockHeader(s.ctx, "finalized")
 			if err != nil {
 				log.Errorf("Unable to retrieve Beacon State from the beacon node, closing finalized requester routine. %s", err.Error())
-				return
+				continue
 			}
 			if int(header.Header.Message.Slot) == finalizedSlot {
 				log.Infof("No new finalized state yet")
