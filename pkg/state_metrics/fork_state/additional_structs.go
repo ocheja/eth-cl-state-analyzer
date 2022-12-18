@@ -117,5 +117,6 @@ func RootToByte(iArray []phase0.Root) [][]byte {
 	for _, item := range iArray {
 		result = append(result, item[:])
 	}
+	log.Infof("Single Block Roots Array: %+v", result)
 	return result
 }
