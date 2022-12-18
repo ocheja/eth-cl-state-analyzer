@@ -93,7 +93,7 @@ loop:
 				// create a model to be inserted into the db, we only insert previous epoch metrics
 
 				missedBlocks := stateMetrics.GetMetricsBase().PrevState.MissedBlocks
-				log.Infof("Missed First Array: %+v", missedBlocks)
+				log.Infof("Block Roots Array: %+v", stateMetrics.GetMetricsBase().PrevState.BlockRoots)
 				// take into accoutn epoch transition
 				nextMissedBlock := stateMetrics.GetMetricsBase().CurrentState.TrackPrevMissingBlock()
 				if nextMissedBlock != 0 {
