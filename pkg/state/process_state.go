@@ -93,7 +93,7 @@ loop:
 				// create a model to be inserted into the db, we only insert previous epoch metrics
 
 				missedBlocks := stateMetrics.GetMetricsBase().PrevState.MissedBlocks
-				log.Infof("Block Roots Array: %+v", stateMetrics.GetMetricsBase().PrevState.BlockRoots)
+				// log.Infof("Block Roots Array: %+v", stateMetrics.GetMetricsBase().PrevState.BlockRoots)
 				// take into accoutn epoch transition
 				nextMissedBlock := stateMetrics.GetMetricsBase().CurrentState.TrackPrevMissingBlock()
 				if nextMissedBlock != 0 {
@@ -127,7 +127,7 @@ loop:
 					epochDBRow.MissingHead)
 
 				// Proposer Duties
-				log.Infof("Missed Full Array: %+v", missedBlocks)
+				// log.Infof("Missed Full Array: %+v", missedBlocks)
 				for _, duty := range stateMetrics.GetMetricsBase().PrevState.EpochStructs.ProposerDuties {
 					newDuty := model.NewProposerDuties(uint64(duty.ValidatorIndex), uint64(duty.Slot), true)
 					for _, item := range missedBlocks {
@@ -138,7 +138,7 @@ loop:
 						}
 
 					}
-					log.Infof("Duty %d Proposed: %t", newDuty.ProposerSlot, newDuty.Proposed)
+					// log.Infof("Duty %d Proposed: %t", newDuty.ProposerSlot, newDuty.Proposed)
 					epochBatch.Queue(model.InsertProposerDuty,
 						newDuty.ValIdx,
 						newDuty.ProposerSlot,
