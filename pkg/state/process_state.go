@@ -126,13 +126,13 @@ loop:
 					epochDBRow.MissingHead)
 
 				// Proposer Duties
-
+				log.Infof("Missed Array: %+v", missedBlocks)
 				for _, duty := range stateMetrics.GetMetricsBase().PrevState.EpochStructs.ProposerDuties {
 					newDuty := model.NewProposerDuties(uint64(duty.ValidatorIndex), uint64(duty.Slot), true)
 					for _, item := range missedBlocks {
 						log.Infof("dutySlot: %d, missed: %d", uint64(duty.Slot), item)
 						if newDuty.ProposerSlot == item { // we found the proposer slot in the missed blocks
-							log.Infof("dutySlot: %d, missed: %d", uint64(duty.Slot), item)
+							log.Infof("Missed: dutySlot: %d, missed: %d", uint64(duty.Slot), item)
 							newDuty.Proposed = false
 						}
 						log.Infof("Duty Proposed: %t", newDuty.Proposed)
