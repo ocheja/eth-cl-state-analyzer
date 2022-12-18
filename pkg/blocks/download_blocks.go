@@ -121,7 +121,7 @@ func (s *BlockAnalyzer) runDownloadBlocksFinalized(wgDownload *sync.WaitGroup) {
 			}
 			if finalizedSlot > 0 {
 
-				for i := finalizedSlot; i < int(header.Header.Message.Slot); i++ {
+				for i := finalizedSlot + 1; i < int(header.Header.Message.Slot); i++ {
 					blockTask := &BlockTask{
 						Block: fork_block.ForkBlockContentBase{
 							Slot:          uint64(i),
