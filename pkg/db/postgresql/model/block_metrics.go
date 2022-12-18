@@ -50,7 +50,7 @@ func NewBlockMetrics(iEpoch uint64,
 	return BlockMetrics{
 		Epoch:         iEpoch,
 		Slot:          iSlot,
-		Graffiti:      graffiti,
+		Graffiti:      strings.ToValidUTF8(graffiti, ""),
 		ProposerIndex: iProposerIndex,
 		Proposed:      iProposed,
 	}
