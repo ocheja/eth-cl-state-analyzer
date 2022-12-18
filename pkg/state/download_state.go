@@ -107,7 +107,7 @@ func (s *StateAnalyzer) runDownloadStatesFinalized(wgDownload *sync.WaitGroup) {
 	nextBstate := fork_state.ForkStateContentBase{}
 	finalizedSlot := 0
 	// tick every epoch, 384 seconds
-	epochTicker := time.After(384 * time.Second)
+	epochTicker := time.After(1 * time.Second)
 	ticker := time.NewTicker(minReqTime)
 	for {
 
