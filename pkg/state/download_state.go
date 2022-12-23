@@ -149,9 +149,10 @@ func (s *StateAnalyzer) runDownloadStatesFinalized(wgDownload *sync.WaitGroup) {
 				continue
 			}
 
-			finalizedSlot = int(header.Header.Message.Slot) - 1
+			finalizedSlot = int(header.Header.Message.Slot)
+			reqState := ((int(finalizedSlot/32) + 2) * 32) - 1
 			log.Infof("New finalized state at slot: %d", finalizedSlot)
-			newState, err := s.cli.Api.BeaconState(s.ctx, fmt.Sprintf("%d", finalizedSlot))
+			newState, err := s.cli.Api.BeaconState(s.ctx, fmt.Sprintf("%d", reqState))
 			if newState == nil {
 				log.Errorf("Unable to retrieve Finalized Beacon State from the beacon node, closing requester routine. Nil State")
 				continue
