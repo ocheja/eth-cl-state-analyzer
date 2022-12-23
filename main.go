@@ -26,9 +26,18 @@ func main() {
 	//ctx, cancel := context.WithCancel(context.Background())
 
 	// Set the general log configurations for the entire tool
-	logrus.SetFormatter(utils.ParseLogFormatter("text"))
+	// logrus.SetFormatter(utils.ParseLogFormatter("text"))
 	logrus.SetOutput(utils.ParseLogOutput("terminal"))
 	logrus.SetLevel(utils.ParseLogLevel("info"))
+
+	customFormatter := &logrus.TextFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		FullTimestamp:   true,
+		PadLevelText:    true,
+		DisableSorting:  true,
+	}
+
+	logrus.SetFormatter(customFormatter)
 
 	app := &cli.App{
 		Name:      CliName,
