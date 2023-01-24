@@ -47,6 +47,7 @@ type StateAnalyzer struct {
 	dbClient *postgresql.PostgresDBService
 
 	downloadMode string
+	metricsMode  string
 
 	// Control Variables
 	finishDownload bool
@@ -65,7 +66,8 @@ func NewStateAnalyzer(
 	idbUrl string,
 	workerNum int,
 	dbWorkerNum int,
-	downloadMode string) (*StateAnalyzer, error) {
+	downloadMode string,
+	metricsMode string) (*StateAnalyzer, error) {
 	log.Infof("generating new State Analzyer from slots %d:%d, for validators %v", initSlot, finalSlot, valIdxs)
 	// gen new ctx from parent
 	ctx, cancel := context.WithCancel(pCtx)
@@ -127,6 +129,7 @@ func NewStateAnalyzer(
 		validatorWorkerNum: workerNum,
 		routineClosed:      make(chan struct{}),
 		downloadMode:       downloadMode,
+		metricsMode:        metricsMode,
 		eventsObj:          events.NewEventsObj(ctx, httpCli),
 	}, nil
 }
