@@ -88,22 +88,24 @@ loop:
 					flags[altair.TimelyHeadFlagIndex],
 					stateMetrics.GetMetricsBase().NextState.GetValStatus(valIdx))
 
-				batch.Queue(model.UpsertValidator,
-					validatorDBRow.ValidatorIndex,
-					validatorDBRow.Slot,
-					validatorDBRow.Epoch,
-					validatorDBRow.ValidatorBalance,
-					validatorDBRow.Reward,
-					validatorDBRow.MaxReward,
-					validatorDBRow.FlagIndexReward,
-					validatorDBRow.SyncCommitteeReward,
-					validatorDBRow.AttSlot,
-					validatorDBRow.BaseReward,
-					validatorDBRow.InSyncCommittee,
-					validatorDBRow.MissingSource,
-					validatorDBRow.MissingTarget,
-					validatorDBRow.MissingHead,
-					validatorDBRow.Status)
+				if s.metricsMode == "full" {
+					batch.Queue(model.UpsertValidator,
+						validatorDBRow.ValidatorIndex,
+						validatorDBRow.Slot,
+						validatorDBRow.Epoch,
+						validatorDBRow.ValidatorBalance,
+						validatorDBRow.Reward,
+						validatorDBRow.MaxReward,
+						validatorDBRow.FlagIndexReward,
+						validatorDBRow.SyncCommitteeReward,
+						validatorDBRow.AttSlot,
+						validatorDBRow.BaseReward,
+						validatorDBRow.InSyncCommittee,
+						validatorDBRow.MissingSource,
+						validatorDBRow.MissingTarget,
+						validatorDBRow.MissingHead,
+						validatorDBRow.Status)
+				}
 
 				s.SummaryTaskChan <- SummaryTask{
 					Epoch:     uint64(validatorDBRow.Epoch),

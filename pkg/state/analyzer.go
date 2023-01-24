@@ -107,7 +107,12 @@ func NewStateAnalyzer(
 		}
 		log.Debug("slotRanges are:", slotRanges)
 	}
-	i_dbClient, err := postgresql.ConnectToDB(ctx, idbUrl, valLength*maxWorkers, dbWorkerNum)
+	chanLen := valLength * maxWorkers
+	if metricsMode == "minimal" {
+		dbWorkerNum = 1
+		chanLen = 10 // we are going to have only 1 epoch at a time, but there could be 2 or 3 writes at the same time
+	}
+	i_dbClient, err := postgresql.ConnectToDB(ctx, idbUrl, chanLen, dbWorkerNum)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to generate DB Client.")
 	}
