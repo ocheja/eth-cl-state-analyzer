@@ -105,6 +105,13 @@ loop:
 					validatorDBRow.MissingHead,
 					validatorDBRow.Status)
 
+				s.SummaryTaskChan <- SummaryTask{
+					Epoch:     uint64(validatorDBRow.Epoch),
+					ValIdx:    validatorDBRow.ValidatorIndex,
+					Reward:    uint64(validatorDBRow.Reward),
+					MaxReward: validatorDBRow.MaxReward,
+				}
+
 				if batch.Len() > postgresql.MAX_BATCH_QUEUE {
 					wlog.Debugf("Sending batch to be stored...")
 					s.dbClient.WriteChan <- batch

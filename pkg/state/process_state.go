@@ -73,6 +73,13 @@ loop:
 				}
 				task.ValIdxs = finalValidxs
 			}
+
+			// start summary task for the current epoch
+			s.InitSummaryChan <- InitSummaryTask{
+				Epoch:        stateMetrics.GetMetricsBase().CurrentState.Epoch,
+				ValsExpected: uint64(len(task.ValIdxs)),
+			}
+
 			if task.NextState.Slot <= s.FinalSlot || task.Finalized {
 
 				stepSize := int(math.Min(float64(MAX_VAL_BATCH_SIZE), float64(len(task.ValIdxs)/s.validatorWorkerNum)))
@@ -151,4 +158,101 @@ loop:
 
 	}
 	log.Infof("Pre process routine finished...")
+}
+
+func (s *StateAnalyzer) runSummaries(wgProcess *sync.WaitGroup, downloadFinishedFlag *bool) {
+	defer wgProcess.Done()
+
+	summaryBatch := pgx.Batch{}
+
+	log.Info("Launching Summaries Collector")
+
+	controlMap := make(map[uint64]EpochSummaries)
+
+loop:
+	for {
+		// in case the downloads have finished, and there are no more tasks to execute
+		if *downloadFinishedFlag && len(s.EpochTaskChan) == 0 {
+			log.Warn("the task channel has been closed, finishing epoch routine")
+
+			break loop
+		}
+
+		select {
+		case <-s.ctx.Done():
+			log.Info("context has died, closing state processer routine")
+			return
+
+		case init, ok := <-s.InitSummaryChan: // a new epoch summary is initialized
+			// check if the channel has been closed
+			if !ok {
+				log.Warn("the task channel has been closed, finishing epoch routine")
+				return
+			}
+			controlMap[init.Epoch] = EpochSummaries{
+				Epoch:         init.Epoch,
+				ValsExpected:  init.ValsExpected,
+				Rewards:       make([]uint64, init.ValsExpected),
+				MaxRewards:    make([]uint64, init.ValsExpected),
+				ValsCollected: 0,
+			}
+
+		case task, ok := <-s.SummaryTaskChan:
+
+			// check if the channel has been closed
+			if !ok {
+				log.Warn("the task channel has been closed, finishing epoch routine")
+				return
+			}
+
+			// First we get a "copy" of the entry
+			if entry, ok := controlMap[task.Epoch]; ok {
+
+				// Then we modify the copy
+				entry.MaxRewards[task.ValIdx] = task.MaxReward
+				entry.Rewards[task.ValIdx] = task.Reward
+				entry.ValsCollected = entry.ValsCollected + 1
+
+			}
+
+			// Flush the database batches
+			if int(controlMap[task.Epoch].ValsCollected) == int(controlMap[task.Epoch].ValsExpected) {
+				// calculate epoch summaries
+				avgReward, avgMaxReward := controlMap[task.Epoch].CalculateSummaries()
+
+				// create batch for writing
+				summaryBatch.Queue(model.UpdateSummariesEpoch,
+					task.Epoch,
+					avgReward,
+					avgMaxReward)
+
+				// send batch
+				s.dbClient.WriteChan <- summaryBatch
+				summaryBatch = pgx.Batch{} // reset
+			}
+		default:
+		}
+
+	}
+	log.Infof("Pre process routine finished...")
+}
+
+type EpochSummaries struct {
+	Epoch         uint64
+	Rewards       []uint64
+	MaxRewards    []uint64
+	ValsExpected  uint64
+	ValsCollected uint64
+}
+
+func (s EpochSummaries) CalculateSummaries() (float64, float64) {
+	avgReward := 0
+	avgMaxReward := 0
+
+	for i := range s.Rewards {
+		avgReward += int(s.Rewards[i])
+		avgMaxReward += int(s.MaxRewards[i])
+	}
+
+	return (float64(avgReward) / float64(s.ValsExpected)), (float64(avgMaxReward) / float64(s.ValsExpected))
 }

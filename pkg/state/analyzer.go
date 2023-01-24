@@ -39,6 +39,8 @@ type StateAnalyzer struct {
 	MonitorSlotProcess map[uint64]uint64
 	EpochTaskChan      chan *EpochTask
 	ValTaskChan        chan *ValTask
+	SummaryTaskChan    chan SummaryTask
+	InitSummaryChan    chan InitSummaryTask
 	validatorWorkerNum int
 
 	cli      *clientapi.APIClient
@@ -116,6 +118,8 @@ func NewStateAnalyzer(
 		ValidatorIndexes:   valIdxs,
 		SlotRanges:         slotRanges,
 		EpochTaskChan:      make(chan *EpochTask, 10),
+		SummaryTaskChan:    make(chan SummaryTask, valLength*maxWorkers),
+		InitSummaryChan:    make(chan InitSummaryTask, 1),
 		ValTaskChan:        make(chan *ValTask, valLength*maxWorkers),
 		MonitorSlotProcess: make(map[uint64]uint64),
 		cli:                httpCli,
@@ -211,6 +215,18 @@ type EpochTask struct {
 	State     fork_state.ForkStateContentBase
 	PrevState fork_state.ForkStateContentBase
 	Finalized bool
+}
+
+type InitSummaryTask struct {
+	Epoch        uint64
+	ValsExpected uint64
+}
+
+type SummaryTask struct {
+	Epoch     uint64
+	ValIdx    uint64
+	Reward    uint64
+	MaxReward uint64
 }
 
 type ValTask struct {
