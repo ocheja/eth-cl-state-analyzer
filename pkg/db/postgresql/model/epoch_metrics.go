@@ -55,6 +55,12 @@ var (
 		FROM t_epoch_metrics_summary
 		ORDER BY f_epoch DESC
 		LIMIT 1`
+
+	UpdateSummariesEpoch = `
+		Update t_epoch_metrics_summary
+		SET (f_avg_reward, f_avg_max_reward) = ($2, $3)
+		where f_epoch = $1
+		`
 )
 
 type EpochMetrics struct {
