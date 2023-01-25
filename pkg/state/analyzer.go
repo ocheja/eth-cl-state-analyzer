@@ -171,8 +171,9 @@ func (s *StateAnalyzer) Run() {
 		wgDownload.Add(1)
 		go s.runDownloadStatesFinalized(&wgDownload)
 	}
-	wgProcess.Add(1)
+	wgProcess.Add(2)
 	go s.runProcessState(&wgProcess, &downloadFinishedFlag)
+	go s.runSummaries(&wgProcess, &downloadFinishedFlag)
 
 	for i := 0; i < s.validatorWorkerNum; i++ {
 		// state workers, receiving State and valIdx to measure performance

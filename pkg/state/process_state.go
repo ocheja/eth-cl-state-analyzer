@@ -172,7 +172,7 @@ func (s *StateAnalyzer) runSummaries(wgProcess *sync.WaitGroup, downloadFinished
 loop:
 	for {
 		// in case the downloads have finished, and there are no more tasks to execute
-		if *downloadFinishedFlag && len(s.EpochTaskChan) == 0 {
+		if *downloadFinishedFlag {
 			log.Warn("the task channel has been closed, finishing epoch routine")
 
 			break loop
