@@ -21,7 +21,7 @@ var (
 		f_missing_source INT, 
 		f_missing_target INT,
 		f_missing_head INT,
-		CONSTRAINT PK_Epoch PRIMARY KEY (f_slot));`
+		CONSTRAINT PK_Epoch PRIMARY KEY (f_epoch));`
 
 	UpsertEpoch = `
 	INSERT INTO t_epoch_metrics_summary (
@@ -40,6 +40,7 @@ var (
 		ON CONFLICT ON CONSTRAINT PK_Epoch
 		DO 
 			UPDATE SET 
+				f_slot = excluded.f_slot, 
 				f_num_att = excluded.f_num_att, 
 				f_num_att_vals = excluded.f_num_att_vals,
 				f_num_vals = excluded.f_num_vals,
@@ -57,9 +58,16 @@ var (
 		LIMIT 1`
 
 	UpdateSummariesEpoch = `
-		Update t_epoch_metrics_summary
-		SET (f_avg_reward, f_avg_max_reward) = ($2, $3)
-		where f_epoch = $1
+	INSERT INTO t_epoch_metrics_summary (
+		f_epoch, 
+		f_avg_reward,
+		f_avg_max_reward)
+		VALUES ($1, $2, $3)
+		ON CONFLICT ON CONSTRAINT PK_Epoch
+		DO 
+			UPDATE SET 
+				f_avg_reward = excluded.f_avg_reward, 
+				f_avg_max_reward = excluded.f_avg_max_reward;
 		`
 )
 
