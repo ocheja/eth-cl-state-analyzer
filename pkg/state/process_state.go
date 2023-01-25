@@ -76,11 +76,11 @@ loop:
 
 			// start summary task for the current epoch
 			s.InitSummaryChan <- InitSummaryTask{
-				Epoch:        stateMetrics.GetMetricsBase().CurrentState.Epoch,
+				Epoch:        stateMetrics.GetMetricsBase().NextState.Epoch, // rewards are calculated for next state
 				ValsExpected: uint64(len(task.ValIdxs)),
 			}
 
-			if task.NextState.Slot <= s.FinalSlot || task.Finalized {
+			if task.State.Slot <= s.FinalSlot || task.Finalized {
 
 				stepSize := int(math.Min(float64(MAX_VAL_BATCH_SIZE), float64(len(task.ValIdxs)/s.validatorWorkerNum)))
 				stepSize = int(math.Max(float64(1), float64(stepSize))) // in case it is 0, at least set to 1
@@ -94,7 +94,7 @@ loop:
 					s.ValTaskChan <- valTask
 				}
 			}
-			if task.PrevState.Slot >= s.InitSlot || task.Finalized { // only write epoch metrics inside the defined range
+			if task.State.Slot >= s.InitSlot || task.Finalized { // only write epoch metrics inside the defined range
 
 				log.Debugf("Writing epoch metrics to DB for slot %d...", task.State.Slot)
 				// create a model to be inserted into the db, we only insert previous epoch metrics
@@ -163,7 +163,7 @@ loop:
 func (s *StateAnalyzer) runSummaries(wgProcess *sync.WaitGroup, downloadFinishedFlag *bool) {
 	defer wgProcess.Done()
 
-	log = log.WithField("routine", "summaries")
+	log := log.WithField("routine", "summaries")
 
 	summaryBatch := pgx.Batch{}
 
@@ -200,7 +200,10 @@ loop:
 				MaxRewards:    make([]uint64, init.ValsExpected),
 				ValsCollected: 0,
 			}
+		default:
+		}
 
+		select {
 		case task, ok := <-s.SummaryTaskChan:
 
 			// check if the channel has been closed
@@ -235,6 +238,7 @@ loop:
 					avgMaxReward)
 
 				// send batch
+				log.Tracef("sending summary batch to write: Epoch %d, AvgReward %f, AvgMaxReward %f", task.Epoch, avgReward, avgMaxReward)
 				s.dbClient.WriteChan <- summaryBatch
 				summaryBatch = pgx.Batch{} // reset
 			}
