@@ -212,7 +212,7 @@ loop:
 				entry.MaxRewards[task.ValIdx] = task.MaxReward
 				entry.Rewards[task.ValIdx] = task.Reward
 				entry.ValsCollected = entry.ValsCollected + 1
-
+				controlMap[task.Epoch] = entry
 			}
 
 			// Flush the database batches
