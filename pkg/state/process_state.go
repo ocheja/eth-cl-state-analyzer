@@ -163,6 +163,8 @@ loop:
 func (s *StateAnalyzer) runSummaries(wgProcess *sync.WaitGroup, downloadFinishedFlag *bool) {
 	defer wgProcess.Done()
 
+	log = log.WithField("routine", "summaries")
+
 	summaryBatch := pgx.Batch{}
 
 	log.Info("Launching Summaries Collector")
@@ -189,6 +191,8 @@ loop:
 				log.Warn("the task channel has been closed, finishing epoch routine")
 				return
 			}
+			log.Tracef("received a new summary init for epoch %d", init.Epoch)
+			log.Tracef("Init: %+v", init)
 			controlMap[init.Epoch] = EpochSummaries{
 				Epoch:         init.Epoch,
 				ValsExpected:  init.ValsExpected,
@@ -205,6 +209,8 @@ loop:
 				return
 			}
 
+			log.Tracef("received a new summary task for epoch %d and valIdx %d", task.Epoch, task.ValIdx)
+
 			// First we get a "copy" of the entry
 			if entry, ok := controlMap[task.Epoch]; ok {
 
@@ -214,6 +220,8 @@ loop:
 				entry.ValsCollected = entry.ValsCollected + 1
 				controlMap[task.Epoch] = entry
 			}
+
+			log.Tracef("Epoch %d, ValsCollected: %d", task.Epoch, controlMap[task.Epoch].ValsCollected)
 
 			// Flush the database batches
 			if int(controlMap[task.Epoch].ValsCollected) == int(controlMap[task.Epoch].ValsExpected) {
