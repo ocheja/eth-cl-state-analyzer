@@ -87,22 +87,30 @@ loop:
 					flags[altair.TimelyTargetFlagIndex],
 					flags[altair.TimelyHeadFlagIndex],
 					stateMetrics.GetMetricsBase().NextState.GetValStatus(valIdx))
-
-				batch.Queue(model.UpsertValidator,
-					validatorDBRow.ValidatorIndex,
-					validatorDBRow.Slot,
-					validatorDBRow.Epoch,
-					validatorDBRow.ValidatorBalance,
-					validatorDBRow.Reward,
-					validatorDBRow.MaxReward,
-					validatorDBRow.AttestationReward,
-					validatorDBRow.SyncCommitteeReward,
-					validatorDBRow.BaseReward,
-					validatorDBRow.InSyncCommittee,
-					validatorDBRow.MissingSource,
-					validatorDBRow.MissingTarget,
-					validatorDBRow.MissingHead,
-					validatorDBRow.Status)
+				if s.dbMode == "full" {
+					batch.Queue(model.UpsertValidator,
+						validatorDBRow.ValidatorIndex,
+						validatorDBRow.Epoch,
+						validatorDBRow.ValidatorBalance,
+						validatorDBRow.Reward,
+						validatorDBRow.MaxReward,
+						validatorDBRow.AttestationReward,
+						validatorDBRow.SyncCommitteeReward,
+						validatorDBRow.BaseReward,
+						validatorDBRow.InSyncCommittee,
+						validatorDBRow.MissingSource,
+						validatorDBRow.MissingTarget,
+						validatorDBRow.MissingHead,
+						validatorDBRow.Status)
+				} else if s.dbMode == "minimal" {
+					batch.Queue(model.UpsertMinimalValidator,
+						validatorDBRow.ValidatorIndex,
+						validatorDBRow.Epoch,
+						validatorDBRow.Reward,
+						validatorDBRow.MaxReward,
+						validatorDBRow.InSyncCommittee,
+						validatorDBRow.Status)
+				}
 
 				if batch.Len() > postgresql.MAX_BATCH_QUEUE {
 					wlog.Debugf("Sending batch to be stored...")

@@ -7,7 +7,6 @@ var (
 	CreateValidatorRewardsTable = `
 	CREATE TABLE IF NOT EXISTS t_validator_rewards_summary(
 		f_val_idx INT,
-		f_slot INT,
 		f_epoch INT,
 		f_balance_eth REAL,
 		f_reward INT,
@@ -21,12 +20,11 @@ var (
 		f_missing_target BOOL, 
 		f_missing_head BOOL,
 		f_status SMALLINT,
-		CONSTRAINT PK_ValidatorSlot PRIMARY KEY (f_val_idx,f_slot));`
+		CONSTRAINT PK_ValidatorSlot PRIMARY KEY (f_val_idx,f_epoch));`
 
 	UpsertValidator = `
 	INSERT INTO t_validator_rewards_summary (	
 		f_val_idx, 
-		f_slot, 
 		f_epoch, 
 		f_balance_eth, 
 		f_reward, 
@@ -39,7 +37,7 @@ var (
 		f_missing_target,
 		f_missing_head,
 		f_status)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	ON CONFLICT ON CONSTRAINT PK_ValidatorSlot
 		DO 
 			UPDATE SET 
@@ -52,6 +50,25 @@ var (
 				f_missing_source = excluded.f_missing_source,
 				f_missing_target = excluded.f_missing_target,
 				f_missing_head = excluded.f_missing_head,
+				f_status = excluded.f_status;
+	`
+
+	UpsertMinimalValidator = `
+	INSERT INTO t_validator_rewards_summary (	
+		f_val_idx, 
+		f_epoch, 
+		f_reward, 
+		f_max_reward,
+		f_in_sync_committee,
+		f_status)
+	VALUES ($1, $2, $3, $4, $5, $6)
+	ON CONFLICT ON CONSTRAINT PK_ValidatorSlot
+		DO 
+			UPDATE SET 
+				f_epoch = excluded.f_epoch, 
+				f_reward = excluded.f_reward,
+				f_max_reward = excluded.f_max_reward,
+				f_in_sync_committee = excluded.f_in_sync_committee,
 				f_status = excluded.f_status;
 	`
 )
