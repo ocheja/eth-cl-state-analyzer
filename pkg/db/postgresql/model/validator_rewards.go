@@ -45,6 +45,8 @@ var (
 				f_balance_eth = excluded.f_balance_eth,
 				f_reward = excluded.f_reward,
 				f_max_reward = excluded.f_max_reward,
+				f_max_att_reward = excluded.f_max_att_reward,
+				f_max_sync_reward = excluded.f_max_sync_reward,
 				f_base_reward = excluded.f_base_reward,
 				f_in_sync_committee = excluded.f_in_sync_committee,
 				f_missing_source = excluded.f_missing_source,
