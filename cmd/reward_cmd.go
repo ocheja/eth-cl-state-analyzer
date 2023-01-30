@@ -55,6 +55,10 @@ var RewardsCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:  "download-mode",
 			Usage: "example: hybrid,historical,finalized. Default: hybrid",
+		},
+		&cli.StringFlag{
+			Name:  "db-mode",
+			Usage: "options: minimal or full. Default: full",
 		}},
 }
 
@@ -69,6 +73,7 @@ func LaunchRewardsCalculator(c *cli.Context) error {
 	coworkers := 1
 	dbWorkers := 1
 	downloadMode := "hybrid"
+	dbMode := "full"
 	logRewardsRewards.Info("parsing flags")
 	// check if a config file is set
 	if !c.IsSet("bn-endpoint") {
@@ -93,6 +98,11 @@ func LaunchRewardsCalculator(c *cli.Context) error {
 		logRewardsRewards.Infof("download mode flag not provided, default: hybrid")
 	} else {
 		downloadMode = c.String("download-mode")
+	}
+	if !c.IsSet("db-mode") {
+		logRewardsRewards.Infof("db mode flag not provided, default: full")
+	} else {
+		dbMode = c.String("db-mode")
 	}
 	if !c.IsSet("workers-num") {
 		logRewardsRewards.Infof("workers-num flag not provided, default: 1")
@@ -121,7 +131,7 @@ func LaunchRewardsCalculator(c *cli.Context) error {
 	}
 
 	// generate the state analyzer
-	stateAnalyzer, err := state.NewStateAnalyzer(c.Context, cli, initSlot, finalSlot, validatorIndexes, dbUrl, coworkers, dbWorkers, downloadMode)
+	stateAnalyzer, err := state.NewStateAnalyzer(c.Context, cli, initSlot, finalSlot, validatorIndexes, dbUrl, coworkers, dbWorkers, downloadMode, dbMode)
 	if err != nil {
 		return err
 	}
