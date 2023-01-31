@@ -20,7 +20,7 @@ var (
 		f_missing_target BOOL, 
 		f_missing_head BOOL,
 		f_status SMALLINT,
-		CONSTRAINT PK_ValidatorSlot PRIMARY KEY (f_val_idx,f_epoch));`
+		CONSTRAINT PK_ValidatorEpoch PRIMARY KEY (f_val_idx,f_epoch));`
 
 	UpsertValidator = `
 	INSERT INTO t_validator_rewards_summary (	
@@ -38,7 +38,7 @@ var (
 		f_missing_head,
 		f_status)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-	ON CONFLICT ON CONSTRAINT PK_ValidatorSlot
+	ON CONFLICT ON CONSTRAINT PK_ValidatorEpoch
 		DO 
 			UPDATE SET 
 				f_epoch = excluded.f_epoch, 
@@ -64,7 +64,7 @@ var (
 		f_in_sync_committee,
 		f_status)
 	VALUES ($1, $2, $3, $4, $5, $6)
-	ON CONFLICT ON CONSTRAINT PK_ValidatorSlot
+	ON CONFLICT ON CONSTRAINT PK_ValidatorEpoch
 		DO 
 			UPDATE SET 
 				f_epoch = excluded.f_epoch, 
