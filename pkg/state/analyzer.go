@@ -45,6 +45,7 @@ type StateAnalyzer struct {
 	PoolValidators     []utils.PoolKeys
 	MissingVals        bool
 	Metrics            DBMetrics
+	ValidatorSummaries ValidatorSummaryMetrics
 
 	cli      *clientapi.APIClient
 	dbClient *postgresql.PostgresDBService
@@ -105,8 +106,13 @@ func NewStateAnalyzer(
 	}
 	// size of channel of maximum number of workers that read from the channel, testing have shown it works well for 500K validators
 	i_dbClient, err := postgresql.ConnectToDB(ctx, idbUrl, maxWorkers, dbWorkerNum)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to generate DB Client.")
+	}
+	valSummaries, err := i_dbClient.ObtainValidatorSummaries()
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to gather validator summaries.")
 	}
 
 	poolValidators := make([]utils.PoolKeys, 0)
@@ -145,6 +151,9 @@ func NewStateAnalyzer(
 		PoolValidators:     poolValidators,
 		MissingVals:        missingVals,
 		Metrics:            metricsObj,
+		ValidatorSummaries: ValidatorSummaryMetrics{
+			Summaries: valSummaries,
+		},
 	}, nil
 }
 

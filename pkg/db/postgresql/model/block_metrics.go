@@ -66,19 +66,19 @@ var (
 )
 
 type BlockMetrics struct {
-	ELTimestamp       uint64
-	Epoch             uint64
-	Slot              uint64
+	ELTimestamp       uint64 // timestamp of the block
+	Epoch             uint64 // epoch the block belongs to
+	Slot              uint64 // slot at which the block was proposed
 	Graffiti          string
-	ProposerIndex     uint64
-	Proposed          bool
-	Attestatons       uint64
-	Deposits          uint64
-	ProposerSlashings uint64
-	AttSlashings      uint64
-	VoluntaryExits    uint64
-	SyncBits          uint64
-	ELFeeRecp         string
+	ProposerIndex     uint64 // Index of the validator who proposed the block
+	Proposed          bool   // boolean that represents whether the block was proposed or not
+	Attestatons       uint64 // number of attestations
+	Deposits          uint64 // number of deposits
+	ProposerSlashings uint64 // number of proposer slashings
+	AttSlashings      uint64 // number of attester slashings
+	VoluntaryExits    uint64 // number of voluntary exits
+	SyncBits          uint64 // number of sync committee bits (participates)
+	ELFeeRecp         string // Fee Recipient for fees
 	ELGasLimit        uint64
 	ELGasUsed         uint64
 	ELBaseFeePerGas   uint64

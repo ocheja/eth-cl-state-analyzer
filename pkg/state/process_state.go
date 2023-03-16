@@ -61,6 +61,7 @@ loop:
 				// first of all see if there user input any validator list
 				// in case no validators provided, do all the existing ones in the next epoch
 				valIdxs := stateMetrics.GetMetricsBase().NextState.GetAllVals()
+				s.ValidatorSummaries.AddMissingIndexes(uint64(len(valIdxs)))
 				validatorBatches = utils.DivideValidatorsBatches(valIdxs, s.validatorWorkerNum)
 
 				if len(s.PoolValidators) > 0 { // in case the user introduces custom pools
