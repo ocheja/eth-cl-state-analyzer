@@ -23,12 +23,10 @@ func (p *PostgresDBService) ObtainValidatorSummaries() ([]model.ValidatorSummary
 	}
 	tmpValIdx := 0
 	tmpActiveSince := 0
-	tmpStartEpoch := 0
-	tmpEndEpoch := 0
-	tmpCurrentBalance := 0
+	tmpNumberEpochs := 0
+	tmpCurrentBalance := float32(0.0)
 	tmpAccReward := 0
 	tmpAccMaxReward := 0
-	tmpAccBaseReward := 0
 	tmpAccSyncCommittee := 0
 	tmpSumMissedSource := 0
 	tmpSumMissedTarget := 0
@@ -40,12 +38,10 @@ func (p *PostgresDBService) ObtainValidatorSummaries() ([]model.ValidatorSummary
 		err := rows.Scan(
 			&tmpValIdx,
 			&tmpActiveSince,
-			&tmpStartEpoch,
-			&tmpEndEpoch,
+			&tmpNumberEpochs,
 			&tmpCurrentBalance,
 			&tmpAccReward,
 			&tmpAccMaxReward,
-			&tmpAccBaseReward,
 			&tmpAccSyncCommittee,
 			&tmpSumMissedSource,
 			&tmpSumMissedTarget,
@@ -56,12 +52,10 @@ func (p *PostgresDBService) ObtainValidatorSummaries() ([]model.ValidatorSummary
 		validators = append(validators, model.ValidatorSummary{
 			ValIdx:           uint64(tmpValIdx),
 			ActiveSince:      uint64(tmpActiveSince),
-			StartEpoch:       uint64(tmpStartEpoch),
-			EndEpoch:         uint64(tmpEndEpoch),
-			CurrentBalance:   int64(tmpCurrentBalance),
+			NumberEpochs:     uint64(tmpNumberEpochs),
+			CurrentBalance:   tmpCurrentBalance,
 			AccReward:        int64(tmpAccReward),
 			AccMaxReward:     int64(tmpAccMaxReward),
-			AccBaseReward:    int64(tmpAccBaseReward),
 			AccSyncCommittee: int64(tmpAccSyncCommittee),
 			SumMissedSource:  uint64(tmpSumMissedSource),
 			SumMissedTarget:  uint64(tmpSumMissedTarget),
