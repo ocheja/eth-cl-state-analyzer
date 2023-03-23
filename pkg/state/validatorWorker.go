@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/cortze/eth-cl-state-analyzer/pkg/db/postgresql"
 	"github.com/cortze/eth-cl-state-analyzer/pkg/db/postgresql/model"
+	"github.com/cortze/eth-cl-state-analyzer/pkg/state_metrics/fork_state"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -90,7 +92,12 @@ loop:
 					flags[altair.TimelyHeadFlagIndex],
 					stateMetrics.GetMetricsBase().NextState.GetValStatus(valIdx))
 
-				if s.Metrics.ValidatorSummary {
+				if s.Metrics.ValidatorSummary &&
+					valIdx < uint64(len(stateMetrics.GetMetricsBase().NextState.Validators)) &&
+					fork_state.IsActive(*stateMetrics.GetMetricsBase().NextState.Validators[valIdx],
+						phase0.Epoch(stateMetrics.GetMetricsBase().NextState.Epoch)) {
+					// only if validator already active
+
 					// Update validator summaries
 					s.ValidatorSummaries.UpdateSingleValidatorSummary(
 						valIdx,
