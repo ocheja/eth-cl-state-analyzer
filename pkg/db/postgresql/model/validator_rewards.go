@@ -5,7 +5,7 @@ import "github.com/cortze/eth-cl-state-analyzer/pkg/state_metrics/fork_state"
 // Postgres intregration variables
 var (
 	CreateValidatorRewardsTable = `
-	CREATE TABLE IF NOT EXISTS t_validator_rewards_summary(
+	CREATE TABLE IF NOT EXISTS t_validator_metrics (
 		f_val_idx INT,
 		f_slot INT,
 		f_epoch INT,
@@ -24,7 +24,7 @@ var (
 		CONSTRAINT PK_ValidatorSlot PRIMARY KEY (f_val_idx,f_slot));`
 
 	UpsertValidator = `
-	INSERT INTO t_validator_rewards_summary (	
+	INSERT INTO t_validator_metrics (	
 		f_val_idx, 
 		f_slot, 
 		f_epoch, 
