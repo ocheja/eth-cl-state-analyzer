@@ -62,7 +62,7 @@ var RewardsCommand = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:        "metrics",
-			Usage:       "example: epoch,validator, epoch. Empty for all",
+			Usage:       "example: epoch,validator,pool,validator_summary Default: epoch.",
 			DefaultText: "epoch",
 		}},
 }

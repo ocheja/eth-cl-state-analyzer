@@ -255,15 +255,17 @@ type MonitorTasks struct {
 }
 
 type DBMetrics struct {
-	Epoch       bool
-	Validator   bool
-	PoolSummary bool
+	Epoch            bool
+	Validator        bool
+	PoolSummary      bool
+	ValidatorSummary bool
 }
 
 func NewMetrics(input string) (DBMetrics, error) {
 	epoch := false
 	validator := false
 	pool := false
+	valSummary := false
 
 	for _, item := range strings.Split(input, ",") {
 
@@ -274,13 +276,16 @@ func NewMetrics(input string) (DBMetrics, error) {
 			validator = true
 		case "pool":
 			pool = true
+		case "validator_summary":
+			valSummary = true
 		default:
 			return DBMetrics{}, fmt.Errorf("could not parse metric: %s", item)
 		}
 	}
 	return DBMetrics{
-		Epoch:       epoch,
-		Validator:   validator,
-		PoolSummary: pool,
+		Epoch:            epoch,
+		Validator:        validator,
+		PoolSummary:      pool,
+		ValidatorSummary: valSummary,
 	}, nil
 }

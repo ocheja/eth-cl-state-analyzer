@@ -18,16 +18,9 @@ func (v *ValidatorSummaryMetrics) UpdateSingleValidatorSummary(
 
 	item.ActiveSince = uint64(validator.ActivationEpoch)
 	item.AccReward = item.AccReward + rewards.Reward
-	item.AccBaseReward = item.AccBaseReward + int64(rewards.BaseReward)
 	item.AccMaxReward = item.AccMaxReward + int64(rewards.MaxReward)
-	item.CurrentBalance = int64(rewards.ValidatorBalance)
-
-	if rewards.Epoch > int(item.EndEpoch) {
-		item.EndEpoch = uint64(rewards.Epoch)
-	}
-	if rewards.Epoch < int(item.StartEpoch) {
-		item.StartEpoch = uint64(rewards.Epoch)
-	}
+	item.CurrentBalance = rewards.ValidatorBalance
+	item.NumberEpochs += 1
 
 	if rewards.InSyncCommittee {
 		item.AccSyncCommittee = item.AccSyncCommittee + 1
@@ -42,6 +35,8 @@ func (v *ValidatorSummaryMetrics) UpdateSingleValidatorSummary(
 	if rewards.MissingHead {
 		item.SumMissedHead = item.SumMissedHead + 1
 	}
+
+	v.Summaries[valIdx] = item
 }
 
 func (v *ValidatorSummaryMetrics) AddMissingIndexes(newLen uint64) {

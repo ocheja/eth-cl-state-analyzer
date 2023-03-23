@@ -90,26 +90,26 @@ loop:
 					flags[altair.TimelyHeadFlagIndex],
 					stateMetrics.GetMetricsBase().NextState.GetValStatus(valIdx))
 
-				// Update validator summaries
-				s.ValidatorSummaries.UpdateSingleValidatorSummary(
-					valIdx,
-					*stateMetrics.GetMetricsBase().NextState.Validators[valIdx],
-					validatorDBRow)
+				if s.Metrics.ValidatorSummary {
+					// Update validator summaries
+					s.ValidatorSummaries.UpdateSingleValidatorSummary(
+						valIdx,
+						*stateMetrics.GetMetricsBase().NextState.Validators[valIdx],
+						validatorDBRow)
 
-				batch.Queue(model.UpsertValidatorSummary,
-					valIdx,
-					s.ValidatorSummaries.Summaries[valIdx].ActiveSince,
-					s.ValidatorSummaries.Summaries[valIdx].StartEpoch,
-					s.ValidatorSummaries.Summaries[valIdx].EndEpoch,
-					s.ValidatorSummaries.Summaries[valIdx].CurrentBalance,
-					s.ValidatorSummaries.Summaries[valIdx].AccReward,
-					s.ValidatorSummaries.Summaries[valIdx].AccMaxReward,
-					s.ValidatorSummaries.Summaries[valIdx].AccBaseReward,
-					s.ValidatorSummaries.Summaries[valIdx].AccSyncCommittee,
-					s.ValidatorSummaries.Summaries[valIdx].SumMissedSource,
-					s.ValidatorSummaries.Summaries[valIdx].SumMissedTarget,
-					s.ValidatorSummaries.Summaries[valIdx].SumMissedHead,
-				)
+					batch.Queue(model.UpsertValidatorSummary,
+						valIdx,
+						s.ValidatorSummaries.Summaries[valIdx].ActiveSince,
+						s.ValidatorSummaries.Summaries[valIdx].NumberEpochs,
+						s.ValidatorSummaries.Summaries[valIdx].CurrentBalance,
+						s.ValidatorSummaries.Summaries[valIdx].AccReward,
+						s.ValidatorSummaries.Summaries[valIdx].AccMaxReward,
+						s.ValidatorSummaries.Summaries[valIdx].AccSyncCommittee,
+						s.ValidatorSummaries.Summaries[valIdx].SumMissedSource,
+						s.ValidatorSummaries.Summaries[valIdx].SumMissedTarget,
+						s.ValidatorSummaries.Summaries[valIdx].SumMissedHead,
+					)
+				}
 
 				// write to disk if metric activated
 				if s.Metrics.Validator {
