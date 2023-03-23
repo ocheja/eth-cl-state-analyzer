@@ -8,7 +8,7 @@ var (
 		f_active_since INT,
 		f_number_epochs INT,
 		f_balance_eth REAL,
-		f_acc_reward INT,
+		f_acc_reward BIGINT,
 		f_acc_max_reward INT,
 		f_acc_sync_committee INT,
 		f_acc_missing_source INT,
