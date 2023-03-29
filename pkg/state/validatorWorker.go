@@ -110,6 +110,9 @@ loop:
 						validatorDBRow.MissingTarget,
 						validatorDBRow.MissingHead,
 						validatorDBRow.Status)
+					batch.Queue(model.DeleteOldValidatorRows,
+						validatorDBRow.ValidatorIndex,
+						validatorDBRow.Epoch)
 
 					if batch.Len() > postgresql.MAX_BATCH_QUEUE {
 						wlog.Debugf("Sending batch to be stored...")

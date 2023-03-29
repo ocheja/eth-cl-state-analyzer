@@ -56,6 +56,11 @@ var (
 				f_missing_head = excluded.f_missing_head,
 				f_status = excluded.f_status;
 	`
+
+	DeleteOldValidatorRows = `
+	DELETE FROM t_validator_rewards_summary 
+	WHERE f_val_idx = $1 and f_epoch < $2;
+	`
 )
 
 type ValidatorRewards struct {
