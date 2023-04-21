@@ -30,9 +30,11 @@ type BlockAnalyzer struct {
 
 	downloadMode string
 	// Control Variables
-	finishDownload bool
-	routineClosed  chan struct{}
-	eventsObj      events.Events
+	stop              bool
+	downloadFinished  bool
+	processerFinished bool
+	routineClosed     chan struct{}
+	eventsObj         events.Events
 
 	initTime time.Time
 }
@@ -84,11 +86,9 @@ func (s *BlockAnalyzer) Run() {
 
 	// Block requester
 	var wgDownload sync.WaitGroup
-	downloadFinishedFlag := false
 
 	// Metrics per block
 	var wgProcess sync.WaitGroup
-	// processFinishedFlag := false
 
 	totalTime := int64(0)
 	start := time.Now()
@@ -105,15 +105,13 @@ func (s *BlockAnalyzer) Run() {
 		go s.runDownloadBlocksFinalized(&wgDownload)
 	}
 	wgProcess.Add(1)
-	go s.runProcessBlock(&wgProcess, &downloadFinishedFlag)
+	go s.runProcessBlock(&wgProcess)
 
 	wgDownload.Wait()
-	downloadFinishedFlag = true
-	log.Info("Beacon Blocks Downloads finished")
+	s.downloadFinished = true
 
 	wgProcess.Wait()
-	// processFinishedFlag = true
-	log.Info("Beacon Blocks Processing finished")
+	s.processerFinished = true
 
 	s.dbClient.DoneTasks()
 	<-s.dbClient.FinishSignalChan
@@ -121,16 +119,11 @@ func (s *BlockAnalyzer) Run() {
 	totalTime += int64(time.Since(start).Seconds())
 	analysisDuration := time.Since(s.initTime).Seconds()
 	log.Info("Blocks Analyzer finished in ", analysisDuration)
-	if s.finishDownload {
-		s.routineClosed <- struct{}{}
-	}
 }
 
 func (s *BlockAnalyzer) Close() {
 	log.Info("Sudden closed detected, closing StateAnalyzer")
-	s.finishDownload = true
-	<-s.routineClosed
-	s.cancel()
+	s.stop = true
 }
 
 //
