@@ -23,7 +23,7 @@ type BlockAnalyzer struct {
 	initSlot  phase0.Slot
 	finalSlot phase0.Slot
 
-	BlockTaskChan chan *BlockTask
+	blockTaskChan chan *BlockTask
 
 	cli      *clientapi.APIClient
 	dbClient *db.PostgresDBService
@@ -68,7 +68,7 @@ func NewBlockAnalyzer(
 		cancel:        cancel,
 		initSlot:      phase0.Slot(initSlot),
 		finalSlot:     phase0.Slot(finalSlot),
-		BlockTaskChan: make(chan *BlockTask, 1),
+		blockTaskChan: make(chan *BlockTask, 1),
 		cli:           httpCli,
 		dbClient:      i_dbClient,
 		routineClosed: make(chan struct{}),
